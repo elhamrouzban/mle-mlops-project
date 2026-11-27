@@ -11,8 +11,8 @@ COLOR = "green"
 def download_data(year: int = YEAR, month: int = MONTH, color: str = COLOR) -> Path:
     """Download the parquet file to data/ if it is not there yet."""
 
-    data_path = Path(f"./data/{color}_tripdata_{year}-{month:02d}.parquet")
-    data_path.parent.mkdir(exist_ok=True)
+    data_path = Path(f"./data/raw/{color}_tripdata_{year}-{month:02d}.parquet")
+    data_path.parent.mkdir(parents=True, exist_ok=True)
 
     if not data_path.exists():
         urlretrieve(

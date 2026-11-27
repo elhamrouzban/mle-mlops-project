@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-RAW_PATH = Path("./data/green_tripdata_2024-01.parquet")
+RAW_PATH = Path("./data/raw/green_tripdata_2024-01.parquet")
 
 FEATURES = ["PULocationID", "DOLocationID", "trip_distance"]
 TARGET = "duration"

@@ -4,12 +4,12 @@ import pandas as pd
 
 from preprocess import RAW_PATH, preprocess
 
-PROCESSED_PATH = Path("./data/processed.parquet")
+PROCESSED_PATH = Path("./data/processed/green_tripdata_2024-01.parquet")
 
 
 def save_data(df: pd.DataFrame, path: Path = PROCESSED_PATH) -> Path:
     """Save the transformed DataFrame as a parquet file."""
-    path.parent.mkdir(exist_ok=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(path, index=False)
     return path
 
