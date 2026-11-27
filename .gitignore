@@ -159,9 +159,12 @@ cython_debug/
 #.idea/
 
 # Notebook downloads stay local; DVC metadata must remain versionable.
-/data/*.parquet
+/data/**/*.parquet
 
 # Local MLflow artifacts
 /mlruns/
 /mlartifacts/
 /mlflow.db*
+
+# Editor settings
+.vscode/
