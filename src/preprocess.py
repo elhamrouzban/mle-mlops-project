@@ -3,7 +3,6 @@ from pathlib import Path
 import pandas as pd
 
 RAW_PATH = Path("./data/green_tripdata_2024-01.parquet")
-PROCESSED_PATH = Path("./data/processed.parquet")
 
 FEATURES = ["PULocationID", "DOLocationID", "trip_distance"]
 TARGET = "duration"
@@ -28,5 +27,4 @@ def preprocess(df: pd.DataFrame) -> pd.DataFrame:
 if __name__ == "__main__":
     df = pd.read_parquet(RAW_PATH)
     df_processed = preprocess(df)
-    df_processed.to_parquet(PROCESSED_PATH, index=False)
     print(df_processed.shape)
