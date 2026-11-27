@@ -10,6 +10,7 @@ COLOR = "green"
 
 def download_data(year: int = YEAR, month: int = MONTH, color: str = COLOR) -> Path:
     """Download the parquet file to data/ if it is not there yet."""
+
     data_path = Path(f"./data/{color}_tripdata_{year}-{month:02d}.parquet")
     data_path.parent.mkdir(exist_ok=True)
 
@@ -29,4 +30,3 @@ def load_data(data_path: Path) -> pd.DataFrame:
 if __name__ == "__main__":
     path = download_data()
     df = load_data(path)
-    print(df.shape)
