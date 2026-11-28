@@ -1,0 +1,97 @@
+schema: '2.0'
+stages:
+  extract:
+    cmd: uv run python src/extract.py
+    deps:
+    - path: src/config.py
+      hash: md5
+      md5: 53dbbd3a9f73974a4aec2067787a6041
+      size: 1558
+    - path: src/extract.py
+      hash: md5
+      md5: b13812aae162eae540955f8fd7f622e2
+      size: 593
+    params:
+      params.yaml:
+        data.color: green
+        data.month: 1
+        data.raw_dir: data/raw
+        data.year: 2024
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: a9c153941478b5cbeaf8008992daf1ee.dir
+      size: 1362284
+      nfiles: 1
+  load:
+    cmd: uv run python src/load.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: a9c153941478b5cbeaf8008992daf1ee.dir
+      size: 1362284
+      nfiles: 1
+    - path: src/config.py
+      hash: md5
+      md5: 53dbbd3a9f73974a4aec2067787a6041
+      size: 1558
+    - path: src/load.py
+      hash: md5
+      md5: 831e55fa198201e25626d677225e5557
+      size: 532
+    - path: src/preprocess.py
+      hash: md5
+      md5: ecd2e9d96f60670847512d873969e137
+      size: 716
+    params:
+      params.yaml:
+        data:
+          year: 2024
+          month: 1
+          color: green
+          raw_dir: data/raw
+          processed_dir: data/processed
+        features:
+        - PULocationID
+        - DOLocationID
+        - trip_distance
+        target: duration
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: fcdaadd986eb07bd05e6e2cdd5d7be48.dir
+      size: 275696
+      nfiles: 1
+  train:
+    cmd: uv run python src/train.py
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: fcdaadd986eb07bd05e6e2cdd5d7be48.dir
+      size: 275696
+      nfiles: 1
+    - path: src/config.py
+      hash: md5
+      md5: 53dbbd3a9f73974a4aec2067787a6041
+      size: 1558
+    - path: src/train.py
+      hash: md5
+      md5: 2d2c17c8af076673f4470b7a6de170e7
+      size: 3783
+    - path: uv.lock
+      hash: md5
+      md5: baf591521c54955c82ea98b7bad5966b
+      size: 856833
+    params:
+      params.yaml:
+        features:
+        - PULocationID
+        - DOLocationID
+        - trip_distance
+        mlflow:
+          experiment_name: green-taxi-monitoring
+          model_name: green-taxi-ride-duration
+        target: duration
+        train:
+          test_size: 0.2
+          random_state: 42

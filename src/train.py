@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 
 import mlflow
 import pandas as pd
@@ -13,17 +12,10 @@ from sklearn.metrics import root_mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 
-from preprocess import FEATURES, TARGET
+from config import cfg
 
 # Reduce utility log noise without hiding warnings about model packaging.
 logging.getLogger("mlflow.utils").setLevel(logging.WARNING)
-
-PROCESSED_PATH = Path("./data/processed/green_tripdata_2024-01.parquet")
-EXPERIMENT_NAME = "green-taxi-monitoring"
-MODEL_NAME = "green-taxi-ride-duration"
-YEAR = 2024
-MONTH = 1
-COLOR = "green"
 
 
 def setup_mlflow() -> None:
@@ -31,18 +23,18 @@ def setup_mlflow() -> None:
     load_dotenv()
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "sqlite:///mlflow.db"))
 
-    if mlflow.get_experiment_by_name(EXPERIMENT_NAME) is None:
+    if mlflow.get_experiment_by_name(cfg.experiment_name) is None:
         mlflow.create_experiment(
-            name=EXPERIMENT_NAME, tags={"developer": "Elham Rouzban"}
+            name=cfg.experiment_name, tags={"developer": "Elham Rouzban"}
         )
-    mlflow.set_experiment(EXPERIMENT_NAME)
+    mlflow.set_experiment(cfg.experiment_name)
 
 
 def split_data(df: pd.DataFrame):
     """Split into 80% train and 20% test."""
-    y = df[TARGET]
-    X = df.drop(columns=[TARGET])
-    return train_test_split(X, y, random_state=42, test_size=0.2)
+    y = df[cfg.target]
+    X = df.drop(columns=[cfg.target])
+    return train_test_split(X, y, random_state=cfg.random_state, test_size=cfg.test_size)
 
 
 def register_model(model_info, run_id: str) -> int:
@@ -51,7 +43,7 @@ def register_model(model_info, run_id: str) -> int:
 
     try:
         client.create_registered_model(
-            name=MODEL_NAME,
+            name=cfg.model_name,
             tags={"framework": "scikit-learn"},
             description="Model to predict ride duration in NYC",
         )
@@ -61,13 +53,13 @@ def register_model(model_info, run_id: str) -> int:
             raise
 
     mv = client.create_model_version(
-        name=MODEL_NAME,
+        name=cfg.model_name,
         source=model_info.model_uri,
         model_id=model_info.model_id,
         run_id=run_id,
     )
     client.set_registered_model_alias(
-        name=MODEL_NAME, version=mv.version, alias="production"
+        name=cfg.model_name, version=mv.version, alias="production"
     )
     return mv.version
 
@@ -81,15 +73,24 @@ def train(df: pd.DataFrame) -> None:
             {
                 "model": "linear regression",
                 "developer": "Elham Rouzban",
-                "dataset": f"{COLOR}-taxi",
-                "year": YEAR,
-                "month": MONTH,
-                "features": FEATURES,
-                "target": TARGET,
+                "dataset": f"{cfg.color}-taxi",
+                "year": cfg.year,
+                "month": cfg.month,
+                "features": cfg.features,
+                "target": cfg.target,
+            }
+        )
+        mlflow.log_params(
+            {
+                "test_size": cfg.test_size,
+                "random_state": cfg.random_state,
+                "year": cfg.year,
+                "month": cfg.month,
+                "color": cfg.color,
             }
         )
         mlflow.log_input(
-            mlflow.data.from_pandas(df, source=str(PROCESSED_PATH)),
+            mlflow.data.from_pandas(df, source=str(cfg.processed_path)),
             context="training",
         )
 
@@ -106,10 +107,10 @@ def train(df: pd.DataFrame) -> None:
         version = register_model(model_info, run.info.run_id)
 
     print(f"RMSE: {rmse}")
-    print(f"Registered model: {MODEL_NAME}, version {version}, alias: production")
+    print(f"Registered model: {cfg.model_name}, version {version}, alias: production")
 
 
 if __name__ == "__main__":
     setup_mlflow()
-    df = pd.read_parquet(PROCESSED_PATH)
+    df = pd.read_parquet(cfg.processed_path)
     train(df)
