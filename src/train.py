@@ -80,6 +80,15 @@ def train(df: pd.DataFrame) -> None:
                 "target": cfg.target,
             }
         )
+        mlflow.log_params(
+            {
+                "test_size": cfg.test_size,
+                "random_state": cfg.random_state,
+                "year": cfg.year,
+                "month": cfg.month,
+                "color": cfg.color,
+            }
+        )
         mlflow.log_input(
             mlflow.data.from_pandas(df, source=str(cfg.processed_path)),
             context="training",
