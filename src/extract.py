@@ -3,23 +3,16 @@ from urllib.request import urlretrieve
 
 import pandas as pd
 
-YEAR = 2024
-MONTH = 1
-COLOR = "green"
+from config import cfg
 
 
-def download_data(year: int = YEAR, month: int = MONTH, color: str = COLOR) -> Path:
-    """Download the parquet file to data/ if it is not there yet."""
+def download_data() -> Path:
+    """Download the parquet file to data/raw/ if it is not there yet."""
+    cfg.raw_path.parent.mkdir(parents=True, exist_ok=True)
 
-    data_path = Path(f"./data/raw/{color}_tripdata_{year}-{month:02d}.parquet")
-    data_path.parent.mkdir(parents=True, exist_ok=True)
-
-    if not data_path.exists():
-        urlretrieve(
-            f"https://d37ci6vzurychx.cloudfront.net/trip-data/{color}_tripdata_{year}-{month:02d}.parquet",
-            data_path,
-        )
-    return data_path
+    if not cfg.raw_path.exists():
+        urlretrieve(cfg.url, cfg.raw_path)
+    return cfg.raw_path
 
 
 def load_data(data_path: Path) -> pd.DataFrame:

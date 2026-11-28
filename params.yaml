@@ -1,0 +1,20 @@
+data:
+  year: 2024
+  month: 1
+  color: green
+  raw_dir: data/raw
+  processed_dir: data/processed
+
+features:
+  - PULocationID
+  - DOLocationID
+  - trip_distance
+target: duration
+
+train:
+  test_size: 0.2
+  random_state: 42
+
+mlflow:
+  experiment_name: green-taxi-monitoring
+  model_name: green-taxi-ride-duration
