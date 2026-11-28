@@ -1,0 +1,55 @@
+name: Train model
+
+on:
+  push:
+    paths:
+      - ".github/workflows/train.yaml"
+      - ".python-version"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/**"
+      - "params.yaml"
+      - "dvc.yaml"
+      - "dvc.lock"
+  pull_request:
+    paths:
+      - ".github/workflows/train.yaml"
+      - ".python-version"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/**"
+      - "params.yaml"
+      - "dvc.yaml"
+      - "dvc.lock"
+  workflow_dispatch:
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.13.5"
+
+      - name: Install project dependencies
+        run: uv sync --locked
+
+      - name: Create .env
+        run: cp .env.example .env
+
+      - name: Run the DVC pipeline
+        run: uv run dvc repro
+
+      - name: Upload MLflow results
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-results
+          path: |
+            mlflow.db
+            mlruns/
+            dvc.lock
